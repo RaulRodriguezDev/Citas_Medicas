@@ -7,16 +7,28 @@ const generateId = () => {
 
         return date + random
 }
-function Form({patients,setPatients}) {
+
+function Form({ patient, patients, setPatients, setPatient}) {
 
         const [name,setName] = useState("")
         const [owner,setOwner] = useState("")
         const [email,setEmail] = useState("")
         const [date,setDate] = useState("")
         const [symptoms,setSymptoms] = useState("")
-
         const [error,setError] = useState(false)
 
+        useEffect(() => {
+
+                if(Object.keys(patient).length>0){
+                        setName(patient.name)
+                        setOwner(patient.owner)
+                        setEmail(patient.email)
+                        setDate(patient.date)
+                        setSymptoms(patient.symptoms)
+                }
+        },[patient])
+
+        // Form validation
         const handleSubmit = (e) => {
 
                 e.preventDefault()
@@ -25,23 +37,34 @@ function Form({patients,setPatients}) {
                         setError(true)
                         return;
                 }
+                setError(false)
 
+                // Patient object, directly from the form
                 const objPatient = {
                         name,
                         owner,
                         email,
                         date,
-                        symptoms,
-                        id: generateId()
+                        symptoms
                 }
 
-                setPatients([...patients,objPatient])
+                if(patient.id){
+                        objPatient.id = patient.id
+                        const newerPatients = patients.map(patientState => patientState.id === patient.id ? objPatient : patientState)
+                        setPatients(newerPatients)
+                        setPatient({})
+                }
+                else{
+                        objPatient.id = generateId()
+                        setPatients([...patients,objPatient])
+                }
+
+                // Restart form
                 setName('')
                 setOwner('')
                 setEmail('')
                 setDate('')
                 setSymptoms('')
-                setError(false)
         }
 
   return (
@@ -108,7 +131,7 @@ function Form({patients,setPatients}) {
         <input 
                 type="submit"
                 className="bg-indigo-600 p-3 text-white text-bold w-full transition-all hover:bg-indigo-700 cursor-pointer uppercase"
-                value="Add Patient"
+                value={patient.id ? 'Update Patient' : 'Add Patient'}
         />
       </form>
     </div>
